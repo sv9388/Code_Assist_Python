@@ -1,5 +1,5 @@
 import argparse, traceback, sys
-sys.path.insert(0, '/home/ubuntu/code_assist_python/src')
+sys.path.insert(0, '/home/sindhu/upwork/code_assist_python/src')
 from code_generator import *
 
 
@@ -16,8 +16,11 @@ def main():
 		args = parser.parse_args()
 
 		ip_str = ' '.join(args.test_str)
-		op = get_code_snippet(ip_str, args.keywords)
-		print op
+		code, keywords, errors = get_code_snippet(ip_str, args.keywords)
+		if len(errors) == 0:
+			print code
+		else:
+			print 'Keywords: \n\t', keywords, '\nErrors: \n\t', errors
 	except:
 		traceback.print_exc()
 		parser.print_help()

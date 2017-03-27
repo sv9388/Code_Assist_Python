@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+{% block title %}Generate{% endblock %}
+{% block content %}
+<script src="{{ url_for('static', filename = 'prettify_code/js/codemirror.js') }}"></script>
+<!-- <script src = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/mode/xml/xml.js"></script>
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/mode/htmlmixed/htmlmixed.js"></script>
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/mode/css/css.js"></script>
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/holder/2.9.0/holder.js"></script> -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+<style type="text/css">
+	  .CodeMirror-line-numbers {
+		width: 2.2em;
+		color: #aaa;
+		background-color: #eee;
+		text-align: right;
+		padding: .4em;
+		margin: 0;
+		font-family: monospace;
+		font-size: 10pt;
+		line-height: 1.1em;
+	  }
+
+	.container {
+		margin-top: 2rem;
+	}
+
+	#text-editor {
+		min-height: 350px;
+	}
+
+	#question-iframe {
+		min-height: 350px;
+	}
+</style>
+<div class="container">
+	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+			<div class="panel panel-default"  onLoad="text_editor();">
+				<div class="panel-heading">
+					<button type="button" data-val="bold" class="btn btn-default" data-loading-text="Generating Code. Please wait..." > Generate Code </button>
+				</div>
+				<div class="panel-body">
+					<textarea id="text-editor" name="text-editor" rows = 20 class="form-control">{{full_code}}</textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+			<div id="question-iframe"></div>
+		</div>
+	</div>
+</div>
+
+<script type = "text/javascript">
+	var editor = document.getElementById('text-editor');
+</script>
+
+<script>
+	$("#text-editor").each(function (i) {
+		editor = CodeMirror.fromTextArea(this, {
+		parserfile: ["parsepython.js"],
+		stylesheet: "../static/prettify_code/css/pythoncolors.css",
+		path: "../static/prettify_code/js/",
+		lineNumbers: true,
+		textWrapping: true,
+		indentUnit: 4,
+		parserConfig: {'pythonVersion': 2, 'strictErrors': true}
+	});
+
+		$('button').click(function(){
+			var string = editor.selection();
+			$.post("{{url_for('code_editor')}}", 
+					{ ip_str    :    editor.selection(), 
+					  delim     :    "    ",
+					  src_code_content : editor.getCode()
+					},
+					function(data, status){
+						if (data["errors"].length > 0){
+							console.log(data["errors"]+" "+$("#opfl").html());
+							$("#opfl").html("<div class=\"alert alert-danger alert-dismissable\">\n<a class=\"close\" data-dismiss=\"alert\" aria-label=\"close\" href=\"#\">×</a>\n" + data["errors"]+"\n</div>");
+						}
+						else{
+							$("#opfl").html("<div class=\"alert alert-success alert-dismissable\">\n<a class=\"close\" data-dismiss=\"alert\" aria-label=\"close\" href=\"#\">×</a>\n  So far so good!\n</div>"); 
+							editor.setCode(data["full_code"]);
+						}
+					});
+			});
+		});
+</script>
+{% endblock %}

@@ -1,8 +1,13 @@
 {% extends "layout.html" %}
+
 {% block title %} Login {% endblock %}
+
+{% block header_content %}
+	<a href="{{url_for('login', skip=false)}}" class="btn btn-info" role="button">  Sign In  </a>
+	<br/><br/>
+	<a href = "{{url_for('login', skip=true)}}"> Skip sign in </a>
+{% endblock %}
+
 {% block content %}
-<!-- HTML Data goes here -->
-<button "btn btn-block btn-social btn-dropbox">
-  Sign in with StackExchange
-</button>
+Code Assist is a free form text interpreter that fills in code snippets from StackOverflow based on your input query. Say goodbye to context switches and improve your productivity. You may or may not sign in to use this product. Just so you know, signing in with Stackexchange will give you more flexibilities in terms of requests / second
 {% endblock %}

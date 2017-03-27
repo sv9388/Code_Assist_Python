@@ -8,6 +8,17 @@
     <title> Code Assist - {% block title %}{% endblock %}</title>
   </head>
   <body>
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Code Assist (Python)</a>
+    </div>
+	    <div class="nav navbar-nav navbar-right"><br/><br/>{% block header_content %}{% endblock %}<br/><br/>
+    </div>
+  </div>
+</nav>
+
     <div id="content">
       <div class="modal-body">
         <div class="col-md-12">
@@ -72,6 +83,7 @@ body.loading {
 body.loading .modal {
     display: block;
 }
+
 </style>
 </html>
 

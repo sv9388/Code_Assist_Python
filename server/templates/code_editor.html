@@ -1,5 +1,15 @@
 {% extends "layout.html" %}
+
 {% block title %}Generate{% endblock %}
+
+{% block header_content %}
+    {% if session.access_token %}
+        <a href="{{url_for('logout')}}" class="btn btn-info" role="button">  Logout  </a>
+    {% else %}
+        <a href = "{{url_for('login')}}"> Go back and sign in </a>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <script src="{{ url_for('static', filename = 'prettify_code/js/codemirror.js') }}"></script>
 <!-- <script src = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/mode/xml/xml.js"></script>

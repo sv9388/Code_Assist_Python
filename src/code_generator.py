@@ -3,7 +3,7 @@ import urllib, json
 from keywords_extractor import *
 from bs4 import BeautifulSoup as bs
 
-server_url_fs = "http://api.stackexchange.com/2.2/search/advanced?%s"
+server_url_fs = "https://api.stackexchange.com/2.2/search/advanced?%s"
 
 #TODO: Fill Client key after oayth impl
 params = { "page" : 1 , "pagesize" : 100, "order" : "desc" , "sort" : "relevance" , "q" : "" , "tagged" : "python;python-2.7" , "site" : "stackoverflow", "accepted" : "True" }

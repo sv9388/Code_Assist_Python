@@ -21,11 +21,17 @@ default_new_code = """##########################################################
 
 @app.route("/logout")
 def logout():
-	session.clear()
+	session.clear() #ss_token')
+	#print "LOGOUT: ", session
 	return render_template('login.html')
 
 @app.route("/code_gen", methods = ["POST", "GET"])
 def code_editor():
+	#print session, session.keys()
+	if not 'access_token' in session:
+		#print "CODE ED: No access token. Redirecting back" 
+		return render_template('login.html')
+	
 	new_code = default_new_code
 	errors = ""
 	ip_str = ""
@@ -38,16 +44,16 @@ def code_editor():
 		indent_count = len(ip_str) - len(ip_str.lstrip())
 
 		access_token = session.get('access_token', 'not_set')
-
 		if access_token == 'not_set':
-			new_code, keywords, errors = get_code_output(old_code, ip_str, indent_count)
-		else:
-			new_code, keywords, errors = get_code_output(old_code, ip_str, indent_count, access_token, app_key)
+			flash('Can\'t authenticate you. Please try in a new session')
+			return render_template('login.html')
+
+		new_code, keywords, errors = get_code_output(old_code, ip_str, indent_count, access_token, app_key)
 
 		if errors.startswith("KILL TOKEN:"):
 			errors = errors[12:]
 			flash(errors)
-			return login(True)
+			return redirect(url_for('logout'))
 		return jsonify(full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
 	return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
 
@@ -63,39 +69,27 @@ def oauth_authorized():
 	resp = requests.post("https://stackexchange.com/oauth/access_token", data =  form_data) 
 	if resp.status_code != 200:
 		flash("You didn't authorize the app!")
-		return render_template('login.html')
+		return render_template('login.html')#render_template('login.html')
 
 	tok_str, scope_str = resp.content.split("&")
 	toks = tok_str.split("=")
 	if not toks[0] == "access_token":
 		flash("Something went wrong while authorizing the app. Please try again later")
-		return render_template('login.html')
+		return render_template('login.html')#render_template('login.html')
 
 	session["access_token"] = toks[1]
 
-	new_code = default_new_code
-	errors = ""
-	ip_str = ""
-	keywords = []
-	return  code_editor()#redirect('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
+	return  redirect(url_for('code_editor'))#render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str))
 
 @app.route("/")
 @app.route('/login')
-def login(force = False):
-	new_code = default_new_code
-	errors = ""
-	ip_str = ""
-	keywords = []
-
-	if request.args.get('skip', 'not set') == 'not set':
-		return render_template('login.html')
-
-	if not force and request.args.get('skip', 'not set') == 'true':
-		return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
-
+def login():
+	if 'access_token' in session:
+		#print "LOGIN: Redirecting to code ed"
+		return redirect(url_for('code_editor'))
 	oauth_q = main_dict.copy()
 	oauth_url_fs = "https://stackexchange.com/oauth?%s"
-	print oauth_url_fs % urllib.urlencode(oauth_q)
+	#print oauth_url_fs % urllib.urlencode(oauth_q)
 	return redirect(oauth_url_fs % urllib.urlencode(oauth_q))
 
 def main():

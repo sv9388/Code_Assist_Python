@@ -3,9 +3,7 @@
 {% block title %} Login {% endblock %}
 
 {% block header_content %}
-	<a href="{{url_for('login', skip=false)}}" class="btn btn-info" role="button">  Sign In  </a>
-	<br/><br/>
-	<a href = "{{url_for('login', skip=true)}}"> Skip sign in </a>
+	<a href="{{url_for('login')}}" class="btn btn-info" role="button">  Sign In  </a>
 {% endblock %}
 
 {% block content %}

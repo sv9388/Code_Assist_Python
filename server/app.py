@@ -7,8 +7,7 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app_key = "9x8YIuDTJmsYEPH2Lr)SFg(("
 
-main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((", "redirect_uri" : "http://127.0.0.1:5000/oauth_authorized" } 
-
+main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((",  "redirect_uri" : "http://52.14.132.27:5000/oauth_authorized" }
 
 default_new_code = """#######################################################################################################
 # 1. Enter your python source code here
@@ -16,7 +15,6 @@ default_new_code = """##########################################################
 # 3. If no selection is made, the app assumes that the last line should be inferred for source codes.
 # 4. Click Generate code and verify the rename the local variables from the generated code.
 #######################################################################################################
-
 """
 
 @app.route("/logout")
@@ -37,36 +35,44 @@ def code_editor():
 	ip_str = ""
 	keywords = []
 
-	if "src_code_content" in request.form.keys() and request.form["ip_str"] != "":
+	if "src_code_content" in request.form.keys():
 		old_code = request.form["src_code_content"]
-		ip_str = request.form["ip_str"]
-		delimiter = request.form["delim"]
-		indent_count = len(ip_str) - len(ip_str.lstrip())
+		ip_str = request.form["ip_str"] if "ip_str" in request.form and request.form["ip_str"] != u""  else [x for x in old_code.split("\n") if x.strip() != ""][-1] 
+		if ip_str == "":
+			errors = "No valid selection found. Please select a string that should be replaced with code or type the input string at the end of code"
+			print ip_str, request.form, [x for x in old_code.split("\n") if x.strip() != ""],  errors
+			return render_template('code_editor.html', full_code = old_code, errors = errors, keywords = keywords, ip_str = ip_str)
+		tab_width = request.form["tab_w"]
+		indent_count =( len(ip_str) - len(ip_str.lstrip()))/len(tab_width)
 
 		access_token = session.get('access_token', 'not_set')
 		if access_token == 'not_set':
 			flash('Can\'t authenticate you. Please try in a new session')
 			return render_template('login.html')
 
-		new_code, keywords, errors = get_code_output(old_code, ip_str, indent_count, access_token, app_key)
+		new_code, keywords, errors = get_code_output(old_code, ip_str, tab_width, indent_count, access_token, app_key)
 
 		if errors.startswith("KILL TOKEN:"):
 			errors = errors[12:]
 			flash(errors)
 			return redirect(url_for('logout'))
 		return jsonify(full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
+	print errors, ip_str
 	return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
 
 @app.route("/oauth_authorized")
 def oauth_authorized():
 	secret_key = request.args.get('code')
+	#print request.url 
 	if not secret_key:
 		flash("Sorry! Wasn't authorized with the right credentials")
 		return render_template('login.html')
 
+	#print secret_key
 	form_data = main_dict.copy()
 	form_data["code"] = secret_key
 	resp = requests.post("https://stackexchange.com/oauth/access_token", data =  form_data) 
+	#print resp
 	if resp.status_code != 200:
 		flash("You didn't authorize the app!")
 		return render_template('login.html')#render_template('login.html')
@@ -82,6 +88,11 @@ def oauth_authorized():
 	return  redirect(url_for('code_editor'))#render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str))
 
 @app.route("/")
+def index():
+	if 'access_token' in session:
+		return redirect(url_for('code_editor'))
+	return render_template('login.html')
+
 @app.route('/login')
 def login():
 	if 'access_token' in session:
@@ -93,15 +104,7 @@ def login():
 	return redirect(oauth_url_fs % urllib.urlencode(oauth_q))
 
 def main():
-	default_new_code = """#######################################################################################################
-# 1. Enter your python source code here
-# 2. When blocked, type the problem statement here, SELECT the problem statement and press enter.
-# 3. If no selection is made, the app assumes that the last line should be inferred for source codes.
-# 4. Click Generate code and verify the rename the local variables from the generated code.
-#######################################################################################################
-
-"""
-	app.run(threaded = True, debug = True)
+	app.run(host = '0.0.0.0', port = 5000) #, port = 80, threaded = True) #, debug = True)
 
 if __name__ == "__main__":
 	main()

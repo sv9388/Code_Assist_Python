@@ -21,11 +21,11 @@ def get_all_answers(keywords, page = 1, access_token = None, app_key = None):
 	params["q"] = ' '.join(keywords)
 	params["page"] = page
 	if access_token and app_key:
-		print access_token, app_key
+		#print access_token, app_key
 		params['access_token'] = access_token
 		params['key'] = app_key.strip()
 	query_str = urllib.urlencode(params)
-	print server_url_fs % query_str
+	#print server_url_fs % query_str
 	
 	r = requests.get(server_url_fs % query_str)
 	js_data = json.loads(r.text)

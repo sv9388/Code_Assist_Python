@@ -83,7 +83,7 @@
 			var string = editor.selection();
 			$.post("{{url_for('code_editor')}}", 
 					{ ip_str    :    editor.selection(), 
-					  delim     :    "    ",
+					  tab_w     :    "    ",
 					  src_code_content : editor.getCode()
 					},
 					function(data, status){

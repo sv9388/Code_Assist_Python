@@ -47,8 +47,8 @@ def get_all_answers(keywords, page = 1, access_token = None, app_key = None):
 
 #Code is compatible with https://github.com/google/code-prettify html
 def get_code_in_answer_id(answer_id):
-	start_line = u"####CODE ASSIST: TODO: Rename variables in generated code ###\n"
-	end_line = u"###CODE ASSIST: End of generated code"
+	start_line = u"# CODE ASSIST: TODO: Rename variables in generated code\n"
+	end_line = u"# CODE ASSIST: End of generated code"
 
 	url = answer_url_fs % answer_id
 	r = requests.get(url)

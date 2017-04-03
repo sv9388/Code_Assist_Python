@@ -9,12 +9,12 @@ app_key = "9x8YIuDTJmsYEPH2Lr)SFg(("
 
 main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((",  "redirect_uri" : "http://52.14.132.27:5000/oauth_authorized" }
 
-default_new_code = """#######################################################################################################
+default_new_code = """#############################################################################################################################
 # 1. Enter your python source code here
-# 2. When blocked, type the problem statement here, SELECT the problem statement and press enter.
+# 2. When blocked, type the problem statement here, prefixed with ###. Then select the problem statement and press Generate Code button. Eg.: If you want to append a line to an existing file, type " ###Append line to an existing file " (without quotes) and click Generate code.
 # 3. If no selection is made, the app assumes that the last line should be inferred for source codes.
 # 4. Click Generate code and verify the rename the local variables from the generated code.
-#######################################################################################################
+#############################################################################################################################
 """
 
 @app.route("/logout")

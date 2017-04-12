@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app_key = "9x8YIuDTJmsYEPH2Lr)SFg(("
 
-main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((",  "redirect_uri" : "http://127.0.0.1:5000/oauth_authorized" }
+main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((",  "redirect_uri" : "http://52.14.132.27:5000/oauth_authorized" }
 
 default_new_code = """#############################################################################################################################
 # 1. Enter your python source code here
@@ -104,7 +104,7 @@ def login():
 	return redirect(oauth_url_fs % urllib.urlencode(oauth_q))
 
 def main():
-	app.run(debug = True, port = 5000) #, port = 80, threaded = True) #, debug = True)
+	app.run(host = '0.0.0.0', port = 5000)
 
 if __name__ == "__main__":
 	main()

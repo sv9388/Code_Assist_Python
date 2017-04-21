@@ -1,5 +1,5 @@
-import requests, urllib
-from flask import session, url_for, Flask, request, redirect, render_template, flash, jsonify
+import requests, urllib, os
+from flask import session, url_for, Flask, request, redirect, render_template, flash, jsonify, abort
 from code_gen_utils import *
 
 SECRET_KEY = "e225eef6c3dadd7e1334b3b2c65d29dff60f2db374a7d4d7"
@@ -17,6 +17,16 @@ default_new_code = """##########################################################
 #############################################################################################################################
 """
 
+
+@app.before_request
+def check_under_maintenance():
+    if os.path.exists("maintenance"):
+        abort(503) 
+
+@app.errorhandler(503)
+def error_503(error):
+    return render_template('maintenance.html' ,  msg = 'Down for maintenance. We will be back in a jiffy :)')
+
 @app.route("/logout")
 def logout():
 	session.clear() #ss_token')
@@ -32,8 +42,9 @@ def code_editor():
 	
 	new_code = default_new_code
 	errors = ""
-	ip_str = ""
-	keywords = []
+	ip_str = "None yet! Please type an input query"
+	answer_link = "#"
+	keywords = ""
 
 	if "src_code_content" in request.form.keys():
 		old_code = request.form["src_code_content"]
@@ -41,7 +52,7 @@ def code_editor():
 		if ip_str == "":
 			errors = "No valid selection found. Please select a string that should be replaced with code or type the input string at the end of code"
 			print ip_str, request.form, [x for x in old_code.split("\n") if x.strip() != ""],  errors
-			return render_template('code_editor.html', full_code = old_code, errors = errors, keywords = keywords, ip_str = ip_str)
+			return render_template('code_editor.html', full_code = old_code, errors = errors, keywords = keywords, answer_link = answer_link, ip_str = ip_str)
 		tab_width = request.form["tab_w"]
 		indent_count =( len(ip_str) - len(ip_str.lstrip()))/len(tab_width)
 
@@ -50,15 +61,17 @@ def code_editor():
 			flash('Can\'t authenticate you. Please try in a new session')
 			return render_template('login.html')
 
-		new_code, keywords, errors = get_code_output(old_code, ip_str, tab_width, indent_count, access_token, app_key)
+		op = get_code_output(old_code, ip_str, tab_width, indent_count, access_token, app_key)
+		print op
+		new_code, answer_link, keywords, errors = op
 
 		if errors.startswith("KILL TOKEN:"):
 			errors = errors[12:]
 			flash(errors)
 			return redirect(url_for('logout'))
-		return jsonify(full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
+		return jsonify(full_code = new_code, errors = errors, answer_link = answer_link, keywords = ', '.join(keywords), ip_str = ip_str)
 	print errors, ip_str
-	return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, ip_str = ip_str)
+	return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, answer_link = answer_link, ip_str = ip_str)
 
 @app.route("/oauth_authorized")
 def oauth_authorized():

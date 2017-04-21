@@ -15,10 +15,29 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-
 <div class="container">
-	<div class="row">
-		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div id="accordion" class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne"> Under the Hood </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div id = "uth" class="panel-body">
+                    <p><h3>Nothing here yet! Visit after you make a query. </h3></p>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo"> Code Editor </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse in">
+		<div class="row">
+		  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="panel panel-default"  onLoad="text_editor();">
 				<div class="panel-heading">
 					<button type="button" style="display: none" id = 'inv_b' data-val="bold" class="btn btn-default" data-loading-text="Generating Value. Please wait..." > Generate Value </button>
@@ -27,14 +46,17 @@
 					<textarea id="text-editor" name="text-editor" rows = 20 class="form-control">{{full_code}}</textarea>
 				</div>
 			</div>
+		  </div>
 		</div>
-	</div>
-
+        </div>
+      </div>
+<!--
 	<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div id="question-iframe"></div>
 		</div>
 	</div>
+-->
 </div>
 
 <script type = "text/javascript">
@@ -67,6 +89,12 @@ $('#inv_b').click(function(){
 							$("#opfl").html("<div class=\"alert alert-success alert-dismissable\">\n<a class=\"close\" data-dismiss=\"alert\" aria-label=\"close\" href=\"#\">×</a>\n  So far so good!\n</div>"); 
 							editor.setValue(data["full_code"]);
 						}
+						var op_str = "<p><br/>Your input string was : <b>"+data['ip_str']+"</b><br/>Keywords deduced are  : <b>"+data['keywords']+"</b>"
+						if (data['answer_link'] != ''){
+							op_str += "<br/>For further explanation or verification please visit <a href = \""+data['answer_link']+"\" target = \"_blank\"> this page </a>"
+						}
+                                                $("#uth").html(op_str + "</p>");
+
 					});
 			});
 </script>

@@ -11,7 +11,10 @@ main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((", 
 
 default_new_code = """#############################################################################################################################
 # 1. Enter your python source code here
-# 2. When blocked, type the problem statement here, prefixed with ###. Then select the problem statement and press Generate Code button. Eg.: If you want to append a line to an existing file, type " ###Append line to an existing file " (without quotes) and click Generate code.
+# 2. When blocked, type the problem statement here, prefixed with ###. Then press Generate Code button. 
+#    Eg.: If you want to append a line to an existing file, type " ###Append line to an existing file " (without quotes) 
+#    and click Generate code. NOTE: If you are using any reserved keywords or identifiers in your query, escape them using 
+#    double quotes("). E.g.: To get code snippets on exception handling use ### "try" "except" eception handling 
 # 3. If no selection is made, the app assumes that the last line should be inferred for source codes.
 # 4. Click Generate code and verify the rename the local variables from the generated code.
 #############################################################################################################################
@@ -62,7 +65,6 @@ def code_editor():
 			return render_template('login.html')
 
 		op = get_code_output(old_code, ip_str, tab_width, indent_count, access_token, app_key)
-		print op
 		new_code, answer_link, keywords, errors = op
 
 		if errors.startswith("KILL TOKEN:"):

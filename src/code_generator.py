@@ -26,8 +26,9 @@ def get_all_answers(ip_str, keywords, page = 1, access_token = None, app_key = N
 		params['key'] = app_key.strip()
 	query_str = urllib.urlencode(params)
 	#print server_url_fs % query_str
-	
+
 	r = requests.get(server_url_fs % query_str)
+
 	js_data = json.loads(r.text)
 	if r.status_code != 200:
 		if js_data["error_id"] in [ 406, 403 ]:
@@ -37,7 +38,7 @@ def get_all_answers(ip_str, keywords, page = 1, access_token = None, app_key = N
 		return items, errors
 
 	items = js_data['items']
-	if js_data['has_more']:
+	if False: #js_data['has_more']:
 		next_items, new_errors = get_all_answers(ip_str, keywords, page + 1, access_token, app_key)
 		items += next_items
 		errors += ' ' + new_errors
@@ -58,7 +59,6 @@ def get_code_in_answer_id(answer_id):
  
 	soup = bs(r.text, "html.parser")
 	answer_div = soup.find("div", attrs = {'data-answerid' : str(answer_id)})
-	print type(answer_div), url
 	pre_divs = answer_div.find_all("pre")
 
 	code_snippets = []

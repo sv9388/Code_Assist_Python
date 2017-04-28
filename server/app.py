@@ -1,4 +1,4 @@
-import requests, urllib, os
+import requests, urllib, os, traceback
 from flask import session, url_for, Flask, request, redirect, render_template, flash, jsonify, abort
 from code_gen_utils import *
 
@@ -11,24 +11,14 @@ main_dict =  {"client_id" : 9277, "client_secret" : "8FLwOKpZQ6H0tgr13i8MlQ((", 
 
 default_new_code = """#############################################################################################################################
 # 1. Enter your python source code here
-# 2. When blocked, type the problem statement here, prefixed with ###. Then press Generate Code button. 
+# 2. When blocked, type the problem statement here, prefixed with ###. Then press Shift + Enter 
 #    Eg.: If you want to append a line to an existing file, type " ###Append line to an existing file " (without quotes) 
-#    and click Generate code. NOTE: If you are using any reserved keywords or identifiers in your query, escape them using 
+#    and press Shift + Enter. NOTE: If you are using any reserved keywords or identifiers in your query, escape them using 
 #    double quotes("). E.g.: To get code snippets on exception handling use ### "try" "except" eception handling 
-# 3. If no selection is made, the app assumes that the last line should be inferred for source codes.
-# 4. Click Generate code and verify the rename the local variables from the generated code.
+# 3. The output has one or mpre options based on your input query. Rename the local variables from the generated code.
 #############################################################################################################################
 """
-
-
-@app.before_request
-def check_under_maintenance():
-    if os.path.exists("maintenance"):
-        abort(503) 
-
-@app.errorhandler(503)
-def error_503(error):
-    return render_template('maintenance.html' ,  msg = 'Down for maintenance. We will be back in a jiffy :)')
+ans_link_fs = """<a href = "%s" target = "_blank">%s</a>"""
 
 @app.route("/logout")
 def logout():
@@ -38,6 +28,7 @@ def logout():
 
 @app.route("/code_gen", methods = ["POST", "GET"])
 def code_editor():
+    try:
 	#print session, session.keys()
 	if not 'access_token' in session:
 		#print "CODE ED: No access token. Redirecting back" 
@@ -56,24 +47,26 @@ def code_editor():
 			errors = "No valid selection found. Please select a string that should be replaced with code or type the input string at the end of code"
 			print ip_str, request.form, [x for x in old_code.split("\n") if x.strip() != ""],  errors
 			return render_template('code_editor.html', full_code = old_code, errors = errors, keywords = keywords, answer_link = answer_link, ip_str = ip_str)
-		tab_width = request.form["tab_w"]
-		indent_count =( len(ip_str) - len(ip_str.lstrip()))/len(tab_width)
-
+		indent_by = int(request.form["tab_w"])
 		access_token = session.get('access_token', 'not_set')
 		if access_token == 'not_set':
 			flash('Can\'t authenticate you. Please try in a new session')
 			return render_template('login.html')
 
-		op = get_code_output(old_code, ip_str, tab_width, indent_count, access_token, app_key)
-		new_code, answer_link, keywords, errors = op
+		new_code_snippets, answer_links, errors, keywords = get_code_output(old_code, ip_str, indent_by, access_token, app_key)
+		for i in range(len(answer_links)):
+			answer_links[i] = ans_link_fs % (answer_links[i], answer_links[i])
+		answer_links = ', '.join(answer_links)
 
 		if errors.startswith("KILL TOKEN:"):
 			errors = errors[12:]
 			flash(errors)
 			return redirect(url_for('logout'))
-		return jsonify(full_code = new_code, errors = errors, answer_link = answer_link, keywords = ', '.join(keywords), ip_str = ip_str)
-	print errors, ip_str
-	return render_template('code_editor.html', full_code = new_code, errors = errors, keywords = keywords, answer_link = answer_link, ip_str = ip_str)
+		return jsonify(full_code = ip_str, code_snippets = new_code_snippets, keywords = ', '.join(keywords), answer_links = answer_links, errors = errors)
+	else:	
+		return render_template('code_editor.html', full_code = new_code, errors = errors,  keywords = keywords, answer_link = answer_link, ip_str = ip_str)
+    except:
+	traceback.print_exc()
 
 @app.route("/oauth_authorized")
 def oauth_authorized():

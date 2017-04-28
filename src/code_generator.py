@@ -3,6 +3,7 @@ import urllib, json
 from keywords_extractor import *
 from bs4 import BeautifulSoup as bs
 
+MAX_SNIPPETS = 5
 server_url_fs = "https://api.stackexchange.com/2.2/search/advanced?%s"
 
 #TODO: Fill Client key after oayth impl
@@ -55,7 +56,7 @@ def get_code_in_answer_id(answer_id):
 	r = requests.get(url)
 	if r.status_code != 200:
 		errors = "Invalid URL at %s" % url 
-		return "", url,  errors
+		return [], url,  errors
  
 	soup = bs(r.text, "html.parser")
 	answer_div = soup.find("div", attrs = {'data-answerid' : str(answer_id)})
@@ -64,39 +65,56 @@ def get_code_in_answer_id(answer_id):
 	code_snippets = []
 	errors = ''  
 	if  len(pre_divs) == 0:
-		errors = u"#No valid code snippets found. Break the query into subproblems. The closest match to your query is at %s" %url
+		pre_divs = answer_div.find_all('code')
+
+	if len(pre_divs) == 0:
+		errors = u"WARN: No valid code snippets found. Break the query into subproblems. The closest match to your query is at %s" %url
 	else:
 		for div in pre_divs:
-			code_snippets.append(div.find('code').text.strip())
+			cd = div.find('code')
+			if cd:
+				code_snippets.append(cd.text.strip())
 
-	return start_line + '\n## or \n'.join(code_snippets) + end_line, url, errors
-	
+	return code_snippets, url, errors
+
+def get_code_snippets(answers):
+	code_snippets = []
+	for answer in answers:
+		if 'accepted_answer_id' in answer.keys():
+			cs_op = get_code_in_answer_id(answer['accepted_answer_id'])
+			arr = [[answer['title'], x, cs_op[1], cs_op[2]] for x in cs_op[0]]
+			code_snippets = code_snippets + arr
+			if len(code_snippets) >= MAX_SNIPPETS:
+				break
+
+	if len(code_snippets) == 0:
+		return [['', '', '', 'No answers at all']]
+	return code_snippets
 
 def get_code(ip_str, keywords, access_token = None, app_key = None):
-	code = ''
+	code = []
 	errors = ''
 	answers, errors = get_all_answers(ip_str, keywords, 1, access_token, app_key)
 	if len(answers) == 0:
 		if len(errors) == 0:
 			errors = "No answers retrieved. Break it into subproblems and retry  per problem or rephrase the existing question"
-		return code, '', errors
+		return [['', code, '', errors]]
 
-	#TODO: Figure out the more relevant answer
-	code, url, errors = get_code_in_answer_id(answers[0]['accepted_answer_id'])
-	return code, url, errors
+	repls = get_code_snippets(answers)
+	return repls
 
 class CodeGenerator:
 	def __init__(self, stopwords_file = None):
 		self.kw_extractor = KeywordsExtractor(stopwords_file)
 
 	def get_code_from_keywords(self, ip_str, keywords, access_token = None, app_key = None):
-		code, answer_link, errors = get_code(ip_str, keywords, access_token, app_key)
-		return code, answer_link, errors
+		code_snippets = get_code(ip_str, keywords, access_token, app_key)
+		return code_snippets
 
 	def get_code_from_str(self, ip_str, kws_only = False, access_token = None, app_key = None):
 		kws = self.kw_extractor.get_keywords(ip_str)
 		if kws_only:
-			return '', '', kws, ''
-		code, answer_link, errors = self.get_code_from_keywords(ip_str, kws, access_token, app_key)
-		return code, answer_link, kws, errors
+			return [], kws
+		code_snippets = self.get_code_from_keywords(ip_str, kws, access_token, app_key)
+		return code_snippets, kws
 

@@ -13,5 +13,5 @@ python app.py &
 
 A demo of the webserver with a sample usage is given below:
 
-[![Code Assist Webserver demo]](https://raw.githubusercontent.com/sv9388/Code_Assist_Python/master/demo.mp4)
+[![Code Assist Webserver demo]](https://youtu.be/nAyLk2ethPo)
 
